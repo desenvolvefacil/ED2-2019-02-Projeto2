@@ -13,7 +13,10 @@
     <logicalFolder name="ResourceFiles"
                    displayName="Arquivos de Recurso"
                    projectFiles="true">
+      <itemPath>SCC0503012019trabalho1.pdf</itemPath>
       <itemPath>SCC0503012019trabalho2.pdf</itemPath>
+      <itemPath>arquivoTrab1si.bin</itemPath>
+      <itemPath>csv.csv</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Arquivos de Teste"
@@ -37,7 +40,13 @@
       </toolsSet>
       <compileType>
       </compileType>
+      <item path="SCC0503012019trabalho1.pdf" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="SCC0503012019trabalho2.pdf" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="arquivoTrab1si.bin" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="csv.csv" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -62,7 +71,13 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="SCC0503012019trabalho1.pdf" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="SCC0503012019trabalho2.pdf" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="arquivoTrab1si.bin" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="csv.csv" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
