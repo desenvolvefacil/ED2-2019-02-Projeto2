@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #define TAMANHO_PAGINA 16000
 #define TAMANHO_REGISTRO 80
@@ -31,6 +32,8 @@
 #define DATA "data"
 #define CIDADE "cidade"
 #define NOME_ESCOLA "nomeEscola"
+
+#define NULO "NULO"
 
 /*
 //comandos de teste
@@ -307,12 +310,16 @@ char * lerComando() {
 void removeAspas(char * string) {
     int j;
 
-    for (j = 0; j < strlen(string) - 2; j++) {
-        string[j] = string[j + 1];
-    }
+    if (strcmp(string, NULO) != 0) {
+        for (j = 0; j < strlen(string) - 2; j++) {
+            string[j] = string[j + 1];
+        }
 
-    string[j] = '\0';
+        string[j] = '\0';
+    }
 }
+
+
 
 /**
  * Le um arquivo csv e mostra em tela
@@ -442,7 +449,7 @@ void opc1(char * comando) {
                     int nroInscricao = atoi(tmp);
 
                     //grava no arquivo binario
-                    fwrite(&nroInscricao, sizeof (nroInscricao), 1, wbFile);
+                    fwrite(&nroInscricao, sizeof (int), 1, wbFile);
 
                     //pega  a nota
                     tmp = strsep(&result, ",");
@@ -870,14 +877,6 @@ void opc5(char * comando) {
                 removeAspas(parametroValor);
             }
 
-
-
-
-
-
-
-
-
             //verifica se é um parametro válido
             if (strcmp(parametroNome, NRO_INSCRICAO) == 0 || strcmp(parametroNome, NOTA) == 0 || strcmp(parametroNome, DATA) == 0 || strcmp(parametroNome, CIDADE) == 0 || strcmp(parametroNome, NOME_ESCOLA) == 0) {
                 //printf("ok");
@@ -1026,13 +1025,103 @@ void opc5(char * comando) {
 
 /**
  * Inser um novo registro conforme valores informados
- * Entrada Modelo: 6 arquivoTrab1si.bin 2
- *                 1234 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
- *                 2132 408.02 "01/08/2016" "CAMPINAS" nulo
+ * Entrada Modelo: 
+6 arquivoTrab1si.bin 2
+1234 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
+2132 408.02 "01/08/2016" "CAMPINAS" nulo
  * @param comando
  */
 void opc6(char * comando) {
 
+    char * nomeArquivo = strsep(&comando, " ");
+
+    int erro = 0;
+
+    int numeroIteracoes = 0;
+    numeroIteracoes = atoi(strsep(&comando, "\0"));
+
+    FILE * fileWb = abrirArquivoBinarioEscritra(nomeArquivo);
+
+    if (fileWb) {
+
+        //pega  a posicao do topo
+        int posTopoPilha = ftell(fileWb);
+        //pega o topo da pilha de removidos
+        int topoPilha = -10;
+        fread(&topoPilha, sizeof (int), 1, fileWb);
+
+
+        int i;
+        //for para ler os comandos a serem executados
+        for (i = 0; i < numeroIteracoes; i++) {
+
+
+            //posiciona o ponteiro no local correo para a nova insercao
+
+            //insere no final
+            if (topoPilha == -1) {
+                //posiciona o ponteiro pro final do arquivo
+                fseek(fileWb, 0, SEEK_END);
+            } else {
+                //pega a posicao do registro removido
+                int posicao = topoPilha * TAMANHO_REGISTRO + TAMANHO_PAGINA;
+
+                //soma 1 do byte de statys
+                fseek(fileWb, posicao + 1, SEEK_SET);
+
+                //pega o topo atual
+                fread(&topoPilha, sizeof (int), 1, fileWb);
+
+                //volta 5 bytes que foram andados e deixa o ponteiro na posição correta para inseção
+                fseek(fileWb, -5, SEEK_CUR);
+
+                //int pos = ftell(fileWb);
+                //int a = 10;
+            }
+
+            //começa a escreve os dados no arquivo
+            comando = lerComando();
+
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+
+            //salva o topo atual
+            fseek(fileWb, 1, SEEK_SET);
+            fwrite(&topoPilha, sizeof (int), 1, fileWb);
+        }
+
+
+
+        fecharArquivoBinarioEscrita(fileWb);
+    } else {
+        erro = 1;
+    }
+
+
+
+
+
+
+
+
+
+    if (erro) {
+        printf("Falha no processamento do arquivo");
+    } else {
+        escreverNaTela(nomeArquivo);
+    }
 }
 
 /**
