@@ -25,6 +25,13 @@
 #define ARQUIVO_ABERTO_ESCRITA '0'
 #define ARQUIVO_FECHADO_ESCRITA '1'
 
+//nome dos campos para comparacao
+#define NRO_INSCRICAO "nroInscricao"
+#define NOTA "nota"
+#define DATA "data"
+#define CIDADE "cidade"
+#define NOME_ESCOLA "nomeEscola"
+
 /*
 //comandos de teste
 1 csv.csv
@@ -35,7 +42,6 @@
 3 arquivoTrab1si.bin cidade Recife
 3 arquivoTrab1si.bin cidade Joao Pessoa    
 3 arquivoTrab1si.bin nomeEscola FRANCISCO RIBEIRO CARRI
-3 arquivoTrab1si.bin nomeEscola FRANCISCO RIBEIRO CARRI
 4 arquivoTrab1si.bin 4999
  */
 
@@ -43,7 +49,7 @@
  * Recebe o path de um arquivo binario e mostra em tela
  * @param nomeArquivoBinario
  */
-void binarioNaTela(char *nomeArquivoBinario) {
+void escreverNaTela(char *nomeArquivoBinario) {
 
     /* Escolha essa função se você já fechou o ponteiro de arquivo 'FILE *'.
      *  Ela vai abrir de novo para leitura e depois fechar. */
@@ -112,7 +118,7 @@ void imprimirLinhaEmTela(int nroInscricao, double nota, char * data, char * cida
  * @param nomeEscola
  * @return nroInscricao caso seja lido ou 0 em caso de erro
  */
-int lerLinha(FILE * fileWb, long RRN, char * removido, int * nroInscricao, double * nota, char * data, char * cidade, char * nomeEscola) {
+int lerLinha(FILE * fileWb, int RRN, char * removido, int * nroInscricao, double * nota, char * data, char * cidade, char * nomeEscola) {
 
     int encadeamento;
 
@@ -120,10 +126,10 @@ int lerLinha(FILE * fileWb, long RRN, char * removido, int * nroInscricao, doubl
     char auxTagCampo;
 
     //posicao do proximo registro
-    long pular = TAMANHO_PAGINA + RRN * TAMANHO_REGISTRO;
+    int pular = TAMANHO_PAGINA + RRN * TAMANHO_REGISTRO;
 
     //posicao atual do ponteiro no arquivo
-    long posAtual = ftell(fileWb);
+    int posAtual = ftell(fileWb);
 
     //ajusta o tamanho do salto tirando o valor atual do ponteiro do registro a ser obtido
     pular -= posAtual;
@@ -196,11 +202,10 @@ int lerLinha(FILE * fileWb, long RRN, char * removido, int * nroInscricao, doubl
 /**
  * Abre um arquivo e verifica sua integridade
  * @param nomeArquivo
- * @param modo
  * @return arquivo aberto ou nulo caso ocorra erro
  */
-FILE * abrirArquivoLeitura(char * nomeArquivo, char * modo) {
-    FILE * file = fopen(nomeArquivo, modo);
+FILE * abrirArquivoBinarioLeitura(char * nomeArquivo) {
+    FILE * file = fopen(nomeArquivo, "rb");
 
     if (file) {
         char status = ARQUIVO_ABERTO_ESCRITA;
@@ -219,9 +224,98 @@ FILE * abrirArquivoLeitura(char * nomeArquivo, char * modo) {
     return file;
 }
 
+/**
+ * Abre o arqvuio para escrita
+ * Seta o status para ARQUIVO_ABERTO_ESCRITA
+ * @param nomeArquivo
+ * @return 
+ */
+FILE * abrirArquivoBinarioEscritra(char * nomeArquivo) {
+    FILE * file = fopen(nomeArquivo, "r+b");
+
+    if (file) {
+        char status = ARQUIVO_ABERTO_ESCRITA;
+
+        //le o primeiro char para verificar a integridade
+        fread(&status, sizeof (char), 1, file);
+
+        //se o arquivo estiver aberto, fecha e retorna nulo
+        if (status == ARQUIVO_ABERTO_ESCRITA) {
+            fclose(file);
+            file = NULL;
+        } else {
+            //volta o curtos pro inicio do arquivo
+            fseek(file, -1, SEEK_CUR);
+            //seta o flag de arquivo aberto pra escrita
+            char status = ARQUIVO_ABERTO_ESCRITA;
+            fwrite(&status, sizeof (char), 1, file);
+        }
+
+    }
+
+    return file;
+}
+
+/**
+ * Seta o status para ARQUIVO_FECHADO_ESCRITA
+ * Fechar o arquivo
+ * @param file
+ */
+void fecharArquivoBinarioEscrita(FILE * file) {
+    if (file != NULL) {
+        //move o ponteiro pro inicio do arquivo
+
+        //atualiza o status para ARQUIVO_FECHADO_ESCRITA 1
+        //posiciona o cursor pro inicio do arquivo
+        fseek(file, 0, SEEK_SET);
+        char status = ARQUIVO_FECHADO_ESCRITA;
+        fwrite(&status, sizeof (char), 1, file);
+
+        //fecha o arquivo binario
+        fclose(file);
+    }
+}
+
+/**
+ * Le uma nova linha de comando
+ * @return nova linha de comando
+ */
+char * lerComando() {
+    //realoca memoria pra variavel comando
+    char * comando = calloc(100, sizeof (char));
+    fgets(comando, 100, stdin);
+
+    //pega o tamnho do comando lido
+    size_t ln = strlen(comando) - 1;
+
+    //elimina o \n caso houver para ajudar e evitar erros no processamento
+    if (comando[ln] == '\n') {
+        comando[ln] = '\0';
+    }
+
+    return comando;
+}
+
+/**
+ * remove as aspas de uma determinada string
+ * @param string
+ */
+void removeAspas(char * string) {
+    int j;
+
+    for (j = 0; j < strlen(string) - 2; j++) {
+        string[j] = string[j + 1];
+    }
+
+    string[j] = '\0';
+}
+
+/**
+ * Le um arquivo csv e mostra em tela
+ * Entrada Modelo: 1 arquivo.csv
+ * @param comando
+ */
 void opc1(char * comando) {
-    // exemplo de comando
-    // 1 arquivo.csv 
 
     char * nomeArquivo = strsep(&comando, "\0");
 
@@ -237,7 +331,7 @@ void opc1(char * comando) {
         char buff[200];
 
         //vez = 1 lendo dados do cacecalho
-        long vez = 1;
+        int vez = 1;
 
         while (!feof(file)) {
             // Lê uma linha (inclusive com o '\n')
@@ -477,17 +571,20 @@ void opc1(char * comando) {
     }
 }
 
+/**
+ * Le um arquivo binario e mostra em tela
+ * Entrada Modelo: 2 arquivoTrablsi.bin
+ * @param comando
+ */
 void opc2(char * comando) {
-    // exemplo de comando
-    // 2 arquivoTrab1si.bin 
 
     char * nomeArquivo = strsep(&comando, "\0");
 
     //numero do registro que esta sendo lido ou RRN
-    long vez = 0;
+    int vez = 0;
 
     //tenta abrir o arquivo pra modo leitura binario
-    FILE *fileWb = abrirArquivoLeitura(nomeArquivo, "rb");
+    FILE *fileWb = abrirArquivoBinarioLeitura(nomeArquivo);
 
     if (fileWb) {
 
@@ -518,7 +615,7 @@ void opc2(char * comando) {
 
 
         //Calcula qtas paginas foram acessadas
-        long totalBytes = TAMANHO_REGISTRO * (vez);
+        int totalBytes = TAMANHO_REGISTRO * (vez);
 
         int totalPaginasAcessadas = totalBytes / TAMANHO_PAGINA;
 
@@ -532,22 +629,23 @@ void opc2(char * comando) {
     }
 }
 
+/**
+ * Pesquisa dentro de um arquivo binario conforme parametros e mostra em tela
+ * Entrada Modelo: 3 arquivoTrab1si.bin nroInscricao 332
+ * Entrada Modelo: 3 arquivoTrab1si.bin nota 561.3
+ * Entrada Modelo: 3 arquivoTrab1si.bin data 23/01/2017
+ * Entrada Modelo: 3 arquivoTrab1si.bin cidade Recife
+ * Entrada Modelo: 3 arquivoTrab1si.bin cidade Joao Pessoa    
+ * Entrada Modelo: 3 arquivoTrab1si.bin nomeEscola FRANCISCO RIBEIRO CARRI
+ * @param comando
+ */
 void opc3(char * comando) {
-    //3 arquivo.bin NomeDoCampo valor
-    //3 arquivo.bin nroInscricao 332
+
     char * nomeArquivo = strsep(&comando, " ");
 
     char * parametroNome = strsep(&comando, " ");
 
     char * parametroValor = strsep(&comando, "\0");
-
-    //nome dos campos para comparacao
-    char NRO_INSCRICAO[] = "nroInscricao";
-    char NOTA[] = "nota";
-    char DATA[] = "data";
-    char CIDADE[] = "cidade";
-    char NOME_ESCOLA[] = "nomeEscola";
-
 
     int erro = 0;
     int imprimiu = 0;
@@ -556,9 +654,9 @@ void opc3(char * comando) {
     if (strcmp(parametroNome, NRO_INSCRICAO) == 0 || strcmp(parametroNome, NOTA) == 0 || strcmp(parametroNome, DATA) == 0 || strcmp(parametroNome, CIDADE) == 0 || strcmp(parametroNome, NOME_ESCOLA) == 0) {
         //printf("ok");
 
-        long vez = 0;
+        int vez = 0;
 
-        FILE *fileWb = abrirArquivoLeitura(nomeArquivo, "rb");
+        FILE *fileWb = abrirArquivoBinarioLeitura(nomeArquivo);
 
         if (fileWb) {
 
@@ -631,7 +729,7 @@ void opc3(char * comando) {
             if (imprimiu) {
                 //Calcula qtas paginas foram acessadas
                 //soma uma pagina para contar o cabecallho
-                long totalBytes = TAMANHO_REGISTRO * (vez - 1) + TAMANHO_PAGINA;
+                int totalBytes = TAMANHO_REGISTRO * (vez - 1) + TAMANHO_PAGINA;
 
                 int totalPaginasAcessadas = totalBytes / TAMANHO_PAGINA;
 
@@ -659,19 +757,23 @@ void opc3(char * comando) {
     }
 }
 
+/**
+ * Pesquisa um registro pelo RRN e mostra em tela
+ * Entrada Modelo: 4 arquivoTrab1si.bin 4999
+ * @param comando
+ */
 void opc4(char * comando) {
     char * nomeArquivo = strsep(&comando, " ");
 
-    long RRN = -1;
+    int RRN = -1;
     RRN = atoi(strsep(&comando, "\0"));
 
     int erro = 0;
-    //printf("%u",RRN);
 
 
     if (RRN >= 0) {
 
-        FILE *fileWb = abrirArquivoLeitura(nomeArquivo, "rb");
+        FILE *fileWb = abrirArquivoBinarioLeitura(nomeArquivo);
 
         if (fileWb) {
 
@@ -716,14 +818,205 @@ void opc4(char * comando) {
 
 }
 
+/**
+ * Esclui registros conforme paramestro informados
+ * Entrada Modelo: 
+5 arquivoTrab1si.bin 2
+nroInscricao 13893
+cidade "Salgueiro"
+ * Entrada Modelo: 
+5 arquivoTrab1si.bin 1
+nomeEscola "FRANCISCO RIBEIRO CARRI"
+ * @param comando
+ */
 void opc5(char * comando) {
 
+    char * nomeArquivo = strsep(&comando, " ");
+
+    int erro = 0;
+
+    int numeroIteracoes = 0;
+    numeroIteracoes = atoi(strsep(&comando, "\0"));
+
+    FILE * fileWb = abrirArquivoBinarioEscritra(nomeArquivo);
+
+    if (fileWb) {
+
+        //pega a posicao do topo para poder ser atualizada posteriormente
+        int posTopoPilha = ftell(fileWb);
+
+        //pega o topo da pilha de removidos
+        int topoPilha = 0;
+        fread(&topoPilha, sizeof (int), 1, fileWb);
+
+        int i;
+        //for para ler os comandos a serem executados
+        for (i = 0; i < numeroIteracoes; i++) {
+
+            //le uma nova linha
+            comando = lerComando();
+
+            //pega o campo a ser comparado
+            char * parametroNome = strsep(&comando, " ");
+            //pega o valor do campo a ser comparado
+            char * parametroValor = strsep(&comando, "\0");
+
+            //remove " do valor do campo
+            if (strcasecmp(parametroNome, NOME_ESCOLA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 || strcasecmp(parametroNome, DATA) == 0) {
+                removeAspas(parametroValor);
+            }
+
+
+
+
+
+
+
+
+
+            //verifica se é um parametro válido
+            if (strcmp(parametroNome, NRO_INSCRICAO) == 0 || strcmp(parametroNome, NOTA) == 0 || strcmp(parametroNome, DATA) == 0 || strcmp(parametroNome, CIDADE) == 0 || strcmp(parametroNome, NOME_ESCOLA) == 0) {
+                //printf("ok");
+
+                int vez = 0;
+
+
+                if (fileWb) {
+
+                    while (!feof(fileWb)) {
+                        char removido;
+                        //int encadeamento;
+                        int nroInscricao = 0;
+                        double nota = -1;
+                        char data[11] = "\0";
+                        //data[10] = '\0';
+
+                        char cidade[100] = "\0"; // = NULL;
+                        char nomeEscola[100] = "\0"; // = NULL;
+
+                        int excluir = 0;
+                        int parar = 0;
+
+
+                        if (lerLinha(fileWb, vez, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
+
+                            if (removido == NAO_REMOVIDO) {
+
+
+                                //verificar se o valor corresponde ao parametro
+                                if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
+                                    int nroAux = atoi(parametroValor);
+
+                                    if (nroInscricao == nroAux) {
+                                        excluir = 1;
+                                        parar = 1;
+                                    }
+                                }
+
+                                if (strcmp(parametroNome, NOTA) == 0) {
+                                    double notaAux = strtod(parametroValor, NULL);
+
+                                    if (notaAux >= 0 && notaAux == nota) {
+                                        excluir = 1;
+                                    }
+                                }
+
+                                if (strcmp(parametroNome, DATA) == 0) {
+                                    if (strcmp(parametroValor, data) == 0) {
+                                        excluir = 1;
+                                    }
+                                }
+
+                                if (strcmp(parametroNome, CIDADE) == 0) {
+                                    if (strcmp(parametroValor, cidade) == 0) {
+                                        excluir = 1;
+                                    }
+                                }
+
+                                if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
+                                    if (strcmp(parametroValor, nomeEscola) == 0) {
+                                        excluir = 1;
+                                    }
+                                }
+
+                            }
+                        }
+
+
+                        //faz a esclusao do resgistro
+                        if (excluir) {
+                            //adasd
+
+                            //verifica se deve parar
+                            if (parar) {
+                                break;
+                            }
+                        }
+
+
+
+                        vez++;
+                    }
+
+
+                } else {
+                    erro == 1;
+                }
+
+            } else {
+                erro = 1;
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+        fecharArquivoBinarioEscrita(fileWb);
+
+
+
+    }
+
+    if (erro) {
+        printf("Falha no processamento do arquivo");
+    } else {
+        escreverNaTela(nomeArquivo);
+    }
 }
 
+/**
+ * Inser um novo registro conforme valores informados
+ * Entrada Modelo: 6 arquivoTrab1si.bin 2
+ *                 1234 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
+ *                 2132 408.02 "01/08/2016" "CAMPINAS" nulo
+ * @param comando
+ */
 void opc6(char * comando) {
 
 }
 
+/**
+ * Atualiza um campo de um registro conforme seu RRN
+ * Entrada Modelo: 7 arquivoTrab1si.bin 2
+ *                 1 nomeEscola "ESCOLA DE ENSINO"
+ *                 5 data "07/07/2007"
+ * @param comando
+ */
 void opc7(char * comando) {
 
 }
