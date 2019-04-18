@@ -147,49 +147,53 @@ int lerLinha(FILE * fileWb, int RRN, char * removido, int * nroInscricao, double
             //le o valor de encadeamento
             fread(&encadeamento, sizeof (int), 1, fileWb);
 
-            //le o numero de inscricao
-            fread(nroInscricao, sizeof (int), 1, fileWb);
+            //le somente se o registro nao foi removido
+            if (*removido == NAO_REMOVIDO) {
 
-            //le a nota
-            fread(nota, sizeof (double), 1, fileWb);
+                //le o numero de inscricao
+                fread(nroInscricao, sizeof (int), 1, fileWb);
 
-            //le a data
-            fread(data, 10, 1, fileWb);
+                //le a nota
+                fread(nota, sizeof (double), 1, fileWb);
 
-            //tenta ler o tamanho da string
-            read = fread(&auxTamanho, sizeof (int), 1, fileWb);
+                //le a data
+                fread(data, 10, 1, fileWb);
 
-            if (read) {
-                //le a tag
-                fread(&auxTagCampo, sizeof (char), 1, fileWb);
+                //tenta ler o tamanho da string
+                read = fread(&auxTamanho, sizeof (int), 1, fileWb);
 
-                auxTamanho--;
-
-                //verifica se é uma tagValida
-                if (auxTagCampo == TAG_CAMPO_CIDADE) {
-
-                    //le o campo cidade
-                    fread(cidade, auxTamanho, 1, fileWb);
-
-                    read = fread(&auxTamanho, sizeof (int), 1, fileWb);
+                if (read) {
+                    //le a tag
+                    fread(&auxTagCampo, sizeof (char), 1, fileWb);
 
                     auxTamanho--;
 
-                    if (read) {
-                        //le a tag
-                        fread(&auxTagCampo, sizeof (char), 1, fileWb);
+                    //verifica se é uma tagValida
+                    if (auxTagCampo == TAG_CAMPO_CIDADE) {
 
-                        //verifica se é uma tag validae
-                        if (auxTagCampo == TAG_CAMPO_ESCOLA) {
-                            //le o campo escolha
-                            fread(nomeEscola, auxTamanho, 1, fileWb);
+                        //le o campo cidade
+                        fread(cidade, auxTamanho, 1, fileWb);
+
+                        read = fread(&auxTamanho, sizeof (int), 1, fileWb);
+
+                        auxTamanho--;
+
+                        if (read) {
+                            //le a tag
+                            fread(&auxTagCampo, sizeof (char), 1, fileWb);
+
+                            //verifica se é uma tag validae
+                            if (auxTagCampo == TAG_CAMPO_ESCOLA) {
+                                //le o campo escolha
+                                fread(nomeEscola, auxTamanho, 1, fileWb);
+                            }
+
                         }
 
+                    } else if (auxTagCampo == TAG_CAMPO_ESCOLA) {
+                        //le o campo escolha
+                        fread(nomeEscola, auxTamanho, 1, fileWb);
                     }
-
-                } else if (auxTagCampo == TAG_CAMPO_ESCOLA) {
-                    //le o campo escolha
-                    fread(nomeEscola, auxTamanho, 1, fileWb);
                 }
             }
         }
@@ -878,7 +882,7 @@ void opc5(char * comando) {
             if (strcmp(parametroNome, NRO_INSCRICAO) == 0 || strcmp(parametroNome, NOTA) == 0 || strcmp(parametroNome, DATA) == 0 || strcmp(parametroNome, CIDADE) == 0 || strcmp(parametroNome, NOME_ESCOLA) == 0) {
                 //printf("ok");
 
-                int vez = 0;
+                int RRN = 0;
 
 
                 if (fileWb) {
@@ -898,7 +902,7 @@ void opc5(char * comando) {
                         int parar = 0;
 
 
-                        if (lerLinha(fileWb, vez, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
+                        if (lerLinha(fileWb, RRN, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
 
                             if (removido == NAO_REMOVIDO) {
 
@@ -945,7 +949,41 @@ void opc5(char * comando) {
 
                         //faz a esclusao do resgistro
                         if (excluir) {
-                            //adasd
+                            //remove o registro logicamente
+
+                            //posicao do proximo registro
+                            int pular = TAMANHO_PAGINA + RRN * TAMANHO_REGISTRO;
+
+                            //posicao atual do ponteiro no arquivo
+                            int posAtual = ftell(fileWb);
+
+                            //ajusta o tamanho do salto tirando o valor atual do ponteiro do registro a ser obtido
+                            pular -= posAtual;
+
+                            //tenta pular pra posição
+                            int seek = fseek(fileWb, pular, SEEK_CUR);
+
+                            //escreve o registro como nulo
+                            char status = REMOVIDO;
+                            fwrite(&status, sizeof (char), 1, fileWb);
+
+                            //escreve o encadeamento
+                            fwrite(&topoPilha, sizeof (int), 1, fileWb);
+
+                            //escreve @ nos campos restantes
+                            int i;
+                            //status 1 + encadeamento 4 = 5
+                            for (i = 5; i < TAMANHO_REGISTRO; i++) {
+                                char arr = '@';
+                                fwrite(&arr, sizeof (char), 1, fileWb);
+                            }
+
+                            //atualiza o topo da pilha com o RRN atual
+                            topoPilha = RRN;
+
+                            //move o ponteiro pra posição de cabeçalho topo da lista
+                            fseek(fileWb, posTopoPilha, SEEK_SET);
+                            fwrite(&topoPilha, sizeof (int), 1, fileWb);
 
                             //verifica se deve parar
                             if (parar) {
@@ -955,7 +993,7 @@ void opc5(char * comando) {
 
 
 
-                        vez++;
+                        RRN++;
                     }
 
 
@@ -966,19 +1004,6 @@ void opc5(char * comando) {
             } else {
                 erro = 1;
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
