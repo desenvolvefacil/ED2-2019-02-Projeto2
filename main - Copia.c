@@ -319,6 +319,7 @@ void removeAspas(char * string) {
     }
 }
 
+
 /**
  * Le um arquivo csv e mostra em tela
  * Entrada Modelo: 1 arquivo.csv
@@ -477,6 +478,9 @@ void opc1(char * comando) {
                     //pega o tamanho dos campos fixo
                     size_t totalBytes = 27;
 
+                    asdasdasdasd
+                    
+                    
                     //tenta ler o campo cidade
                     char * cidade = strsep(&result, ",");
 
@@ -832,8 +836,7 @@ void opc4(char * comando) {
  * Entrada Modelo: 
 5 arquivoTrab1si.bin 2
 nroInscricao 13893
-cidade "Coimbra"
-
+cidade "Salgueiro"
  * Entrada Modelo: 
 5 arquivoTrab1si.bin 1
 nomeEscola "FRANCISCO RIBEIRO CARRI"
@@ -1025,11 +1028,9 @@ void opc5(char * comando) {
 /**
  * Inser um novo registro conforme valores informados
  * Entrada Modelo: 
-6 arquivoTrab1si.bin 3
-78 408.02 "01/08/2016" "CAMPINA GRANDE" NULO
-79 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
-80 NULO NULO "Paradise City" NULO
-
+6 arquivoTrab1si.bin 2
+1234 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
+2132 408.02 "01/08/2016" "CAMPINAS" nulo
  * @param comando
  */
 void opc6(char * comando) {
@@ -1083,154 +1084,23 @@ void opc6(char * comando) {
             //começa a escreve os dados no arquivo
             comando = lerComando();
 
-            //grava o valor de removido
-            char removido = NAO_REMOVIDO;
-            fwrite(&removido, sizeof (char), 1, fileWb);
-
-            //grava o encadeamento
-            int encadeamento = -1;
-            fwrite(&encadeamento, sizeof (int), 1, fileWb);
-
-
-            //começa a ler os dados
-            char * tmp = strsep(&comando, " ");
-            //convert a string pra inteiro
-            int nroInscricao = atoi(tmp);
-            //grava no arquivo binario
-            fwrite(&nroInscricao, sizeof (int), 1, fileWb);
-
-
-            //pega  a nota
-            tmp = strsep(&comando, " ");
-
-            double nota = -1;
-
-
-            if (strcmp(tmp, NULO) != 0) {
-                //caso haja texto, converte o mesmo pra double
-                nota = strtod(tmp, NULL);
-            }
-
-            //grava no arquivo binario
-            fwrite(&nota, sizeof (nota), 1, fileWb);
-
-
-            //seta data nula padrao
-            tmp = strsep(&comando, " ");
-            char data[10] = "\0@@@@@@@@@";
-
-            //caso conseguiui ler campo data do arquivo copia para variavel
-            if (strcmp(tmp, NULO) != 0) {
-                removeAspas(tmp);
-                strncpy(data, tmp, sizeof (data));
-            }
-
-            //grava a data no arquivo binario
-            fwrite(&data, sizeof (data), 1, fileWb);
-
-            //pega o tamanho dos campos fixo
-            size_t totalBytes = 27;
-
-
-            //tenta ler o campo cidade
-            char * cidade = strsep(&comando, "\"");
 
             
-            if(cidade[strlen(cidade)-1]==' '){
-                cidade[strlen(cidade)-1]='\0';
-            }
             
-            if (strcmp(cidade, NULO) != 0) {
-                cidade = strsep(&comando, "\"");
-                //removeAspas(cidade);
-                
-                //add 1 para o \0
-                int tamanhoCidade = strlen(cidade) + 1;
-
-                //concatena com \0 no final d string
-                cidade = strncat(cidade, "\0", tamanhoCidade);
-
-                //add o char tagCampoCidade no tamanho do campo
-                tamanhoCidade++;
-
-                //salva o tamanho do campo
-                fwrite(&tamanhoCidade, sizeof (int), 1, fileWb);
-
-                //remove o char tagCampoCidade para salvar a string cidade
-                tamanhoCidade--;
-
-                //escreve a tag do campo
-                char tagCampoCidade = TAG_CAMPO_CIDADE;
-                fwrite(&tagCampoCidade, sizeof (char), 1, fileWb);
-
-                //escreve a string cidade no arquivo
-                fwrite(cidade, tamanhoCidade, 1, fileWb);
-
-                // 5 = int (4) + tagCampoCIdade(1)
-                totalBytes += 5 + tamanhoCidade;
-                
-                strsep(&comando," ");
-            }
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
 
 
-
-            //tenta ler o nomeEscola
-            char * nomeEscola = strsep(&comando, "\0");
-
-
-
-            if (strcmp(nomeEscola, NULO) != 0) {
-                //removeAspas(nomeEscola);
-                
-                nomeEscola[strlen(nomeEscola)-1]='\0';
-                
-                //soma 1 do \0
-                int tamanhoEscola = strlen(nomeEscola) + 1;
-
-                //concatena com \0
-                nomeEscola = strncat(nomeEscola, "\0", tamanhoEscola);
-
-                //soma 1 do char tagCampoEscola
-                tamanhoEscola++;
-
-                //salva o tamanho do campo
-                fwrite(&tamanhoEscola, sizeof (tamanhoEscola), 1, fileWb);
-
-                //remove 1 do tagCampoEscola
-                tamanhoEscola--;
-
-                //salva a tag do campo
-                char tagCampoEscola = TAG_CAMPO_ESCOLA;
-                fwrite(&tagCampoEscola, sizeof (char), 1, fileWb);
-
-                fwrite(nomeEscola, tamanhoEscola, 1, fileWb);
-
-                //5 = int tamanho + char tag
-                totalBytes += 5 + tamanhoEscola;
-            }
-
-
-
-
-            //escreve o lixo para completar o registro
-            int i, total = TAMANHO_REGISTRO - totalBytes;
-            //cria a variavel com tamanho que falta
-            char * lixo = calloc(total, 1);
-            //for para setar @ nos bytes faltantes
-            for (i = 0; i < total; i++) {
-                lixo[i] = '@';
-            }
-            //escreve em arquivo o lixo
-            fwrite(&lixo, total, 1, fileWb);
-            free(lixo);
-            lixo = NULL;
-
-
-
-
-
-            //salva o topo atual dos escluidos
-            fseek(fileWb, posTopoPilha, SEEK_SET);
+            //salva o topo atual
+            fseek(fileWb, 1, SEEK_SET);
             fwrite(&topoPilha, sizeof (int), 1, fileWb);
         }
 
