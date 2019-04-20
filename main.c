@@ -822,7 +822,7 @@ cidade "Coimbra"
  * Entrada Modelo: 
 
 5 arquivoTrab1si.bin 1
-nomeEscola "FRANCISCO RIBEIRO CARRI"
+nomeEscola "DONIZETTI TAVARES DE LI"
 
  * @param comando
  */
@@ -1009,13 +1009,18 @@ void opc5(char * comando) {
  * Inser um novo registro conforme valores informados
  * Entrada Modelo:
  
-6 arquivoTrab1si.bin 3
+6 arquivoTrab1si.bin 5
 78 408.02 "01/08/2016" "CAMPINA GRANDE" NULO
 79 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
 80 NULO NULO "Paradise City" NULO
+81 NULO NULO NULO NULO
+82 NULO "10/10/2010" "CID CID" "ESC ESC"
 
-6 arquivoTrab1si.bin 1
-96 50.10 "10/10/2010" "CIDADE NOVA" "ESCOLA NOVA" 
+6 arquivoTrab1si.bin 4
+11 50.10 "10/10/2010" "C D" "E N"
+12 50.10 "10/10/2010" "C D" "E N" 
+13 50.10 "10/10/2010" "C D" "E N" 
+14 50.10 "10/10/2010" "C D" "E N" 
 
  * @param comando
  */
