@@ -304,22 +304,6 @@ char * lerComando() {
 }
 
 /**
- * remove as aspas de uma determinada string
- * @param string
- */
-void removeAspas(char * string) {
-    int j;
-
-    if (strcmp(string, NULO) != 0) {
-        for (j = 0; j < strlen(string) - 2; j++) {
-            string[j] = string[j + 1];
-        }
-
-        string[j] = '\0';
-    }
-}
-
-/**
  * Le um arquivo csv e mostra em tela
  * Entrada Modelo: 1 arquivo.csv
  * @param comando
@@ -830,13 +814,16 @@ void opc4(char * comando) {
 /**
  * Esclui registros conforme paramestro informados
  * Entrada Modelo: 
+
 5 arquivoTrab1si.bin 2
 nroInscricao 13893
 cidade "Coimbra"
 
  * Entrada Modelo: 
+
 5 arquivoTrab1si.bin 1
 nomeEscola "FRANCISCO RIBEIRO CARRI"
+
  * @param comando
  */
 void opc5(char * comando) {
@@ -859,9 +846,9 @@ void opc5(char * comando) {
         int topoPilha = 0;
         fread(&topoPilha, sizeof (int), 1, fileWb);
 
-        int i;
+        int vez;
         //for para ler os comandos a serem executados
-        for (i = 0; i < numeroIteracoes; i++) {
+        for (vez = 0; vez < numeroIteracoes; vez++) {
 
             //le uma nova linha
             comando = lerComando();
@@ -869,11 +856,11 @@ void opc5(char * comando) {
             //pega o campo a ser comparado
             char * parametroNome = strsep(&comando, " ");
             //pega o valor do campo a ser comparado
-            char * parametroValor = strsep(&comando, "\0");
+            char * parametroValor = strsep(&comando, "\"");
 
             //remove " do valor do campo
             if (strcasecmp(parametroNome, NOME_ESCOLA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 || strcasecmp(parametroNome, DATA) == 0) {
-                removeAspas(parametroValor);
+                parametroValor = strsep(&comando, "\"");
             }
 
             //verifica se é um parametro válido
@@ -883,121 +870,115 @@ void opc5(char * comando) {
                 int RRN = 0;
 
 
-                if (fileWb) {
+                while (!feof(fileWb)) {
+                    char removido;
+                    //int encadeamento;
+                    int nroInscricao = 0;
+                    double nota = -1;
+                    char data[11] = "\0";
+                    //data[10] = '\0';
 
-                    while (!feof(fileWb)) {
-                        char removido;
-                        //int encadeamento;
-                        int nroInscricao = 0;
-                        double nota = -1;
-                        char data[11] = "\0";
-                        //data[10] = '\0';
+                    char cidade[100] = "\0"; // = NULL;
+                    char nomeEscola[100] = "\0"; // = NULL;
 
-                        char cidade[100] = "\0"; // = NULL;
-                        char nomeEscola[100] = "\0"; // = NULL;
-
-                        int excluir = 0;
-                        int parar = 0;
+                    int excluir = 0;
+                    int parar = 0;
 
 
-                        if (lerLinha(fileWb, RRN, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
+                    if (lerLinha(fileWb, RRN, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
 
-                            if (removido == NAO_REMOVIDO) {
+                        if (removido == NAO_REMOVIDO) {
 
 
-                                //verificar se o valor corresponde ao parametro
-                                if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
-                                    int nroAux = atoi(parametroValor);
+                            //verificar se o valor corresponde ao parametro
+                            if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
+                                int nroAux = atoi(parametroValor);
 
-                                    if (nroInscricao == nroAux) {
-                                        excluir = 1;
-                                        parar = 1;
-                                    }
+                                if (nroInscricao == nroAux) {
+                                    excluir = 1;
+                                    parar = 1;
                                 }
-
-                                if (strcmp(parametroNome, NOTA) == 0) {
-                                    double notaAux = strtod(parametroValor, NULL);
-
-                                    if (notaAux >= 0 && notaAux == nota) {
-                                        excluir = 1;
-                                    }
-                                }
-
-                                if (strcmp(parametroNome, DATA) == 0) {
-                                    if (strcmp(parametroValor, data) == 0) {
-                                        excluir = 1;
-                                    }
-                                }
-
-                                if (strcmp(parametroNome, CIDADE) == 0) {
-                                    if (strcmp(parametroValor, cidade) == 0) {
-                                        excluir = 1;
-                                    }
-                                }
-
-                                if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
-                                    if (strcmp(parametroValor, nomeEscola) == 0) {
-                                        excluir = 1;
-                                    }
-                                }
-
                             }
+
+                            if (strcmp(parametroNome, NOTA) == 0) {
+                                double notaAux = strtod(parametroValor, NULL);
+
+                                if (notaAux >= 0 && notaAux == nota) {
+                                    excluir = 1;
+                                }
+                            }
+
+                            if (strcmp(parametroNome, DATA) == 0) {
+                                if (strcmp(parametroValor, data) == 0) {
+                                    excluir = 1;
+                                }
+                            }
+
+                            if (strcmp(parametroNome, CIDADE) == 0) {
+                                if (strcmp(parametroValor, cidade) == 0) {
+                                    excluir = 1;
+                                }
+                            }
+
+                            if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
+                                if (strcmp(parametroValor, nomeEscola) == 0) {
+                                    excluir = 1;
+                                }
+                            }
+
                         }
-
-
-                        //faz a esclusao do resgistro
-                        if (excluir) {
-                            //remove o registro logicamente
-
-                            //posicao do proximo registro
-                            int pular = TAMANHO_PAGINA + RRN * TAMANHO_REGISTRO;
-
-                            //posicao atual do ponteiro no arquivo
-                            int posAtual = ftell(fileWb);
-
-                            //ajusta o tamanho do salto tirando o valor atual do ponteiro do registro a ser obtido
-                            pular -= posAtual;
-
-                            //tenta pular pra posição
-                            int seek = fseek(fileWb, pular, SEEK_CUR);
-
-                            //escreve o registro como nulo
-                            char status = REMOVIDO;
-                            fwrite(&status, sizeof (char), 1, fileWb);
-
-                            //escreve o encadeamento
-                            fwrite(&topoPilha, sizeof (int), 1, fileWb);
-
-                            //escreve @ nos campos restantes
-                            int i;
-                            //status 1 + encadeamento 4 = 5
-                            for (i = 5; i < TAMANHO_REGISTRO; i++) {
-                                char arr = '@';
-                                fwrite(&arr, sizeof (char), 1, fileWb);
-                            }
-
-                            //atualiza o topo da pilha com o RRN atual
-                            topoPilha = RRN;
-
-                            //move o ponteiro pra posição de cabeçalho topo da lista
-                            fseek(fileWb, posTopoPilha, SEEK_SET);
-                            fwrite(&topoPilha, sizeof (int), 1, fileWb);
-
-                            //verifica se deve parar
-                            if (parar) {
-                                break;
-                            }
-                        }
-
-
-
-                        RRN++;
                     }
 
 
-                } else {
-                    erro == 1;
+                    //faz a esclusao do resgistro
+                    if (excluir) {
+                        //remove o registro logicamente
+
+                        //posicao do proximo registro
+                        int pular = TAMANHO_PAGINA + RRN * TAMANHO_REGISTRO;
+
+                        //posicao atual do ponteiro no arquivo
+                        int posAtual = ftell(fileWb);
+
+                        //ajusta o tamanho do salto tirando o valor atual do ponteiro do registro a ser obtido
+                        pular -= posAtual;
+
+                        //tenta pular pra posição
+                        int seek = fseek(fileWb, pular, SEEK_CUR);
+
+                        //escreve o registro como nulo
+                        char status = REMOVIDO;
+                        fwrite(&status, sizeof (char), 1, fileWb);
+
+                        //escreve o encadeamento
+                        fwrite(&topoPilha, sizeof (int), 1, fileWb);
+
+                        //escreve @ nos campos restantes
+                        int i;
+                        //status 1 + encadeamento 4 = 5
+                        for (i = 5; i < TAMANHO_REGISTRO; i++) {
+                            char arr = '@';
+                            fwrite(&arr, sizeof (char), 1, fileWb);
+                        }
+
+                        //atualiza o topo da pilha com o RRN atual
+                        topoPilha = RRN;
+
+                        //move o ponteiro pra posição de cabeçalho topo da lista
+                        fseek(fileWb, posTopoPilha, SEEK_SET);
+                        fwrite(&topoPilha, sizeof (int), 1, fileWb);
+
+                        //verifica se deve parar
+                        if (parar) {
+                            break;
+                        }
+                    }
+
+
+
+                    RRN++;
                 }
+
 
             } else {
                 erro = 1;
@@ -1013,6 +994,8 @@ void opc5(char * comando) {
 
 
 
+    } else {
+        erro = 1;
     }
 
     if (erro) {
@@ -1024,11 +1007,15 @@ void opc5(char * comando) {
 
 /**
  * Inser um novo registro conforme valores informados
- * Entrada Modelo: 
+ * Entrada Modelo:
+ 
 6 arquivoTrab1si.bin 3
 78 408.02 "01/08/2016" "CAMPINA GRANDE" NULO
 79 109.98 NULO NULO "ESCOLA DE ESTUDO PRIMARIO"
 80 NULO NULO "Paradise City" NULO
+
+6 arquivoTrab1si.bin 1
+96 50.10 "10/10/2010" "CIDADE NOVA" "ESCOLA NOVA" 
 
  * @param comando
  */
@@ -1052,9 +1039,9 @@ void opc6(char * comando) {
         fread(&topoPilha, sizeof (int), 1, fileWb);
 
 
-        int i;
+        int vez;
         //for para ler os comandos a serem executados
-        for (i = 0; i < numeroIteracoes; i++) {
+        for (vez = 0; vez < numeroIteracoes; vez++) {
 
 
             //posiciona o ponteiro no local correo para a nova insercao
@@ -1114,14 +1101,14 @@ void opc6(char * comando) {
             //grava no arquivo binario
             fwrite(&nota, sizeof (nota), 1, fileWb);
 
-
+            //separa o comando por " ou espaco vazio
+            tmp = strsep(&comando, "\" ");
             //seta data nula padrao
-            tmp = strsep(&comando, " ");
             char data[10] = "\0@@@@@@@@@";
 
             //caso conseguiui ler campo data do arquivo copia para variavel
             if (strcmp(tmp, NULO) != 0) {
-                removeAspas(tmp);
+                tmp = strsep(&comando, "\"");
                 strncpy(data, tmp, sizeof (data));
             }
 
@@ -1133,17 +1120,22 @@ void opc6(char * comando) {
 
 
             //tenta ler o campo cidade
-            char * cidade = strsep(&comando, "\"");
+            char * cidade = strsep(&comando, " \"");
 
-            
-            if(cidade[strlen(cidade)-1]==' '){
-                cidade[strlen(cidade)-1]='\0';
-            }
-            
+
+            /*if (cidade[strlen(cidade) - 1] == ' ') {
+                cidade[strlen(cidade) - 1] = '\0';
+            }*/
+
             if (strcmp(cidade, NULO) != 0) {
+                //remove a primeira aspas
+                if(cidade[0]=='\0' && data[0]!='\0'){
+                    strsep(&comando, "\"");
+                }
+                
                 cidade = strsep(&comando, "\"");
                 //removeAspas(cidade);
-                
+
                 //add 1 para o \0
                 int tamanhoCidade = strlen(cidade) + 1;
 
@@ -1168,22 +1160,22 @@ void opc6(char * comando) {
 
                 // 5 = int (4) + tagCampoCIdade(1)
                 totalBytes += 5 + tamanhoCidade;
-                
-                strsep(&comando," ");
+
+                strsep(&comando, " ");
             }
 
 
 
             //tenta ler o nomeEscola
-            char * nomeEscola = strsep(&comando, "\0");
+            char * nomeEscola = strsep(&comando, "\"");
 
 
 
             if (strcmp(nomeEscola, NULO) != 0) {
-                //removeAspas(nomeEscola);
-                
-                nomeEscola[strlen(nomeEscola)-1]='\0';
-                
+                //pega stering restante
+                nomeEscola = strsep(&comando, "\"");
+
+
                 //soma 1 do \0
                 int tamanhoEscola = strlen(nomeEscola) + 1;
 
