@@ -1134,10 +1134,10 @@ void opc6(char * comando) {
 
             if (strcmp(cidade, NULO) != 0) {
                 //remove a primeira aspas
-                if(cidade[0]=='\0' && data[0]!='\0'){
+                if (cidade[0] == '\0' && data[0] != '\0') {
                     strsep(&comando, "\"");
                 }
-                
+
                 cidade = strsep(&comando, "\"");
                 //removeAspas(cidade);
 
@@ -1255,13 +1255,61 @@ void opc6(char * comando) {
 
 /**
  * Atualiza um campo de um registro conforme seu RRN
- * Entrada Modelo: 7 arquivoTrab1si.bin 2
- *                 1 nomeEscola "ESCOLA DE ENSINO"
- *                 5 data "07/07/2007"
+ * Entrada Modelo: 
+ * 
+7 arquivoTrab1si.bin 3
+6 nota 200.5
+1 nomeEscola "ESCOLA DE ENSINO"
+5 data "07/07/2007"
+
  * @param comando
  */
 void opc7(char * comando) {
 
+    char * nomeArquivo = strsep(&comando, " ");
+    int erro = 0;
+    int numeroIteracoes = 0;
+    numeroIteracoes = atoi(strsep(&comando, "\0"));
+
+    FILE * fileWb = abrirArquivoBinarioEscritra(nomeArquivo);
+
+    if (fileWb) {
+        int vez;
+        //for para ler os comandos a serem executados
+        for (vez = 0; vez < numeroIteracoes; vez++) {
+
+            //começa a escreve os dados no arquivo
+            comando = lerComando();
+
+            //pegando os parametros
+            int RRN = atoi(strsep(&comando, " "));
+
+            char * parametroNome = strsep(&comando, " ");
+
+            char * parametroValor = strsep(&comando, "\"");
+
+            //caso seja parametro com " faz um novo deslocamento
+            if (parametroValor[0] == '\0') {
+                parametroValor = strsep(&comando, "\"");
+            }
+
+            int a = 10;
+        }
+
+        //fecha o arquivo e seta o status como fechado
+        fecharArquivoBinarioEscrita(fileWb);
+
+
+    } else {
+        erro = 1;
+    }
+
+
+    if (erro) {
+        printf("Falha no processamento do arquivo");
+    } else {
+        escreverNaTela(nomeArquivo);
+    }
 }
 
 /*
