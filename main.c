@@ -1257,9 +1257,10 @@ void opc6(char * comando) {
  * Atualiza um campo de um registro conforme seu RRN
  * Entrada Modelo: 
  * 
-7 arquivoTrab1si.bin 3
+7 arquivoTrab1si.bin 4
+100 nota 20
 6 nota 200.5
-1 nomeEscola "ESCOLA DE ENSINO"
+1 nroInscricao 10
 5 data "07/07/2007"
 
  * @param comando
@@ -1293,7 +1294,90 @@ void opc7(char * comando) {
                 parametroValor = strsep(&comando, "\"");
             }
 
-            int a = 10;
+            //campos para busca
+            char removido;
+            //int encadeamento;
+            int nroInscricao = 0;
+            double nota = -1;
+            char data[11] = "\0";
+            //data[10] = '\0';
+
+            char cidade[100] = "\0"; // = NULL;
+            char nomeEscola[100] = "\0"; // = NULL;
+
+
+            //se conseguiu ler a linha
+            if (lerLinha(fileWb, RRN, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
+                //se o registro não esta removido logicamente
+                if (removido == NAO_REMOVIDO) {
+
+                    //inicio do arquivo
+                    int inicioRegistro = TAMANHO_PAGINA + TAMANHO_REGISTRO * RRN;
+                    //soma os bytes de status(1) e encadeamento(4)
+                    inicioRegistro += 1 + 4;
+
+                    //posicao atual
+                    int posAtual = ftell(fileWb);
+
+                    int salto = inicioRegistro - posAtual;
+
+                    //verifica qual o parametro deve ser atualizado
+                    if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
+                        //volta o ponteiro para a posição do campo
+                        fseek(fileWb, salto, SEEK_CUR);
+
+
+                        int novoNroInscricao = atoi(parametroValor);
+                        //escreve diretamente no arquivo
+                        fwrite(&novoNroInscricao, sizeof (int), 1, fileWb);
+
+                    } else if (strcmp(parametroNome, NOTA) == 0) {
+
+                        //soma o campo nroinscricao
+                        salto += 4;
+                        //volta o ponteiro para a posição do campo
+                        fseek(fileWb, salto, SEEK_CUR);
+
+                        double novaNota = -1;
+                        //se não for nulo
+                        if (strcmp(parametroValor, NULO) != 0) {
+                            novaNota = strtod(parametroValor, NULL);
+                        }
+
+                        fwrite(&novaNota, sizeof (double), 1, fileWb);
+
+                    } else if (strcmp(parametroNome, DATA) == 0) {
+
+                        //soma o campo nroinscricao + nota
+                        salto += 4 + 8;
+                        //volta o ponteiro para a posição do campo
+                        fseek(fileWb, salto, SEEK_CUR);
+
+                        char novaData[10] = "\0@@@@@@@@@";
+
+                        if (strcmp(parametroValor, NULO) != 0) {
+                            strncpy(novaData, parametroValor, sizeof (novaData));
+                        }
+
+                        //grava a data no arquivo binario
+                        fwrite(&novaData, sizeof (novaData), 1, fileWb);
+
+
+                    } else if (strcmp(parametroNome, CIDADE) == 0) {
+
+                    } else if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
+
+                    }
+
+
+                }
+            }
+
+
+
+
+
+
         }
 
         //fecha o arquivo e seta o status como fechado
