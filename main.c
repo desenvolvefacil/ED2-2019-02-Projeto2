@@ -1263,6 +1263,13 @@ void opc6(char * comando) {
 1 nroInscricao 10
 5 data "07/07/2007"
 
+7 arquivoTrab1si.bin 3
+0 cidade NULO
+5 cidade NULO
+2 cidade NULO
+
+
+ * 
  * @param comando
  */
 void opc7(char * comando) {
@@ -1297,17 +1304,17 @@ void opc7(char * comando) {
             //campos para busca
             char removido;
             //int encadeamento;
-            int nroInscricao = 0;
-            double nota = -1;
-            char data[11] = "\0";
+            int nroInscricaoAtual = 0;
+            double notaAtual = -1;
+            char dataAtual[11] = "\0";
             //data[10] = '\0';
 
-            char cidade[100] = "\0"; // = NULL;
-            char nomeEscola[100] = "\0"; // = NULL;
+            char cidadeAtual[100] = "\0"; // = NULL;
+            char nomeEscolaAtual[100] = "\0"; // = NULL;
 
 
             //se conseguiu ler a linha
-            if (lerLinha(fileWb, RRN, &removido, &nroInscricao, &nota, data, cidade, nomeEscola)) {
+            if (lerLinha(fileWb, RRN, &removido, &nroInscricaoAtual, &notaAtual, dataAtual, cidadeAtual, nomeEscolaAtual)) {
                 //se o registro não esta removido logicamente
                 if (removido == NAO_REMOVIDO) {
 
@@ -1364,6 +1371,100 @@ void opc7(char * comando) {
 
 
                     } else if (strcmp(parametroNome, CIDADE) == 0) {
+                        //soma o campo nroinscricao + nota + data
+                        salto += 4 + 8 + 10;
+                        //volta o ponteiro para a posição do campo
+                        fseek(fileWb, salto, SEEK_CUR);
+
+                        //verifica se vai fazer deslocamento do campo cidade
+                        int deslocaEscola = 0;
+
+                        int tamanhoCidadeAtual = strlen(cidadeAtual);
+
+                        //tota de bytes escritos no registro até o momento
+                        int bytes = 27;
+
+                        //for nulo e tiver algo escrito
+                        if (strcmp(parametroValor, NULO) == 0) {
+
+                            if (tamanhoCidadeAtual) {
+                                //desloca os dados da escola pra frente
+                                deslocaEscola = 1;
+                            }
+                        } else {
+
+                            //salva os dados da cidade atual
+                            //add 1 para o \0
+                            int tamanhoCidadeNova = strlen(parametroValor) + 1;
+                            if (tamanhoCidadeNova > 1) {
+
+                                //concatena com \0 no final d string
+                                char * cidadeNova = strncat(parametroValor, "\0", tamanhoCidadeNova);
+
+                                //add o char tagCampoCidade no tamanho do campo
+                                tamanhoCidadeNova++;
+
+                                //salva o tamanho do campo
+                                fwrite(&tamanhoCidadeNova, sizeof (tamanhoCidadeNova), 1, fileWb);
+
+                                //remove o char tagCampoCidade para salvar a string cidade
+                                tamanhoCidadeNova--;
+
+                                //escreve a tag do campo
+                                char tagCampoCidade = TAG_CAMPO_CIDADE;
+                                fwrite(&tagCampoCidade, sizeof (char), 1, fileWb);
+
+                                //escreve a string cidade no arquivo
+                                fwrite(cidadeNova, tamanhoCidadeNova, 1, fileWb);
+
+                                bytes += 5 + tamanhoCidadeNova;
+                                
+                                //remove 1 do \0
+                                if (tamanhoCidadeAtual != (tamanhoCidadeNova-1)) {
+                                    //se o tamanho for diferente desloca a cidade
+                                    deslocaEscola = 1;
+                                }
+                            }
+                        }
+
+                        //faz o deslocamento do campo cidade
+                        if (deslocaEscola) {
+                            //verifica se existe nomeEscola
+                            //soma 1 do \0
+                            int tamanhoEscolaAtual = strlen(nomeEscolaAtual) + 1;
+                            if (tamanhoEscolaAtual > 1) {
+
+                                //grava os dados da escola pra frente do arquivo
+
+                                //add o char tagCampoCidade no tamanho do campo
+                                tamanhoEscolaAtual++;
+
+                                //salva o tamanho do campo
+                                fwrite(&tamanhoEscolaAtual, sizeof (tamanhoEscolaAtual), 1, fileWb);
+
+                                //remove o char tagCampoCidade para salvar a string cidade
+                                tamanhoEscolaAtual--;
+
+                                //escreve a tag do campo
+                                char tagCampoCidade = TAG_CAMPO_ESCOLA;
+                                fwrite(&tagCampoCidade, sizeof (char), 1, fileWb);
+
+                                //escreve a string cidade no arquivo
+                                fwrite(nomeEscolaAtual, tamanhoEscolaAtual, 1, fileWb);
+                                
+                                //soma os bytes deslocados
+                                bytes += 5 + tamanhoEscolaAtual;
+                            }
+
+                            //completa com nulos
+                            char arr = '@';
+                            int j;
+
+                            //completa com nulos caso 
+                            for (j = bytes; j < TAMANHO_REGISTRO; j++) {
+                                fwrite(&arr, 1, 1, fileWb);
+                            }
+                        }
 
                     } else if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
 
