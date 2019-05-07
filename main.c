@@ -651,7 +651,7 @@ void opc3(char * comando) {
     int imprimiu = 0;
 
     //verifica se é um parametro válido
-    if (strcmp(parametroNome, NRO_INSCRICAO) == 0 || strcmp(parametroNome, NOTA) == 0 || strcmp(parametroNome, DATA) == 0 || strcmp(parametroNome, CIDADE) == 0 || strcmp(parametroNome, NOME_ESCOLA) == 0) {
+    if (strcasecmp(parametroNome, NRO_INSCRICAO) == 0 || strcasecmp(parametroNome, NOTA) == 0 || strcasecmp(parametroNome, DATA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 || strcasecmp(parametroNome, NOME_ESCOLA) == 0) {
         //printf("ok");
 
         int vez = 0;
@@ -678,7 +678,7 @@ void opc3(char * comando) {
 
 
                         //verificar se o valor corresponde ao parametro
-                        if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
+                        if (strcasecmp(parametroNome, NRO_INSCRICAO) == 0) {
                             int nroAux = atoi(parametroValor);
 
                             if (nroInscricao == nroAux) {
@@ -689,7 +689,7 @@ void opc3(char * comando) {
                             }
                         }
 
-                        if (strcmp(parametroNome, NOTA) == 0) {
+                        if (strcasecmp(parametroNome, NOTA) == 0) {
                             double notaAux = strtod(parametroValor, NULL);
 
                             if (notaAux >= 0 && notaAux == nota) {
@@ -698,22 +698,22 @@ void opc3(char * comando) {
                             }
                         }
 
-                        if (strcmp(parametroNome, DATA) == 0) {
-                            if (strcmp(parametroValor, data) == 0) {
+                        if (strcasecmp(parametroNome, DATA) == 0) {
+                            if (strcasecmp(parametroValor, data) == 0) {
                                 imprimirLinhaEmTela(nroInscricao, nota, data, cidade, nomeEscola);
                                 imprimiu = 1;
                             }
                         }
 
-                        if (strcmp(parametroNome, CIDADE) == 0) {
-                            if (strcmp(parametroValor, cidade) == 0) {
+                        if (strcasecmp(parametroNome, CIDADE) == 0) {
+                            if (strcasecmp(parametroValor, cidade) == 0) {
                                 imprimirLinhaEmTela(nroInscricao, nota, data, cidade, nomeEscola);
                                 imprimiu = 1;
                             }
                         }
 
-                        if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
-                            if (strcmp(parametroValor, nomeEscola) == 0) {
+                        if (strcasecmp(parametroNome, NOME_ESCOLA) == 0) {
+                            if (strcasecmp(parametroValor, nomeEscola) == 0) {
                                 imprimirLinhaEmTela(nroInscricao, nota, data, cidade, nomeEscola);
                                 imprimiu = 1;
                             }
@@ -879,11 +879,13 @@ void opc5(char * comando) {
             }
 
             //verifica se é um parametro válido
-            if (strcmp(parametroNome, NRO_INSCRICAO) == 0 || strcmp(parametroNome, NOTA) == 0 || strcmp(parametroNome, DATA) == 0 || strcmp(parametroNome, CIDADE) == 0 || strcmp(parametroNome, NOME_ESCOLA) == 0) {
+            if (strcasecmp(parametroNome, NRO_INSCRICAO) == 0 || strcasecmp(parametroNome, NOTA) == 0 || strcasecmp(parametroNome, DATA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 || strcasecmp(parametroNome, NOME_ESCOLA) == 0) {
                 //printf("ok");
 
                 int RRN = 0;
 
+                //voltao o ponteiro pro inicio do arquivo
+                fseek(fileWb,0,SEEK_SET);
 
                 while (!feof(fileWb)) {
                     char removido;
@@ -906,7 +908,7 @@ void opc5(char * comando) {
 
 
                             //verificar se o valor corresponde ao parametro
-                            if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
+                            if (strcasecmp(parametroNome, NRO_INSCRICAO) == 0) {
                                 int nroAux = atoi(parametroValor);
 
                                 if (nroInscricao == nroAux) {
@@ -915,7 +917,7 @@ void opc5(char * comando) {
                                 }
                             }
 
-                            if (strcmp(parametroNome, NOTA) == 0) {
+                            if (strcasecmp(parametroNome, NOTA) == 0) {
                                 double notaAux = strtod(parametroValor, NULL);
 
                                 if (notaAux >= 0 && notaAux == nota) {
@@ -923,20 +925,20 @@ void opc5(char * comando) {
                                 }
                             }
 
-                            if (strcmp(parametroNome, DATA) == 0) {
-                                if (strcmp(parametroValor, data) == 0) {
+                            if (strcasecmp(parametroNome, DATA) == 0) {
+                                if (strcasecmp(parametroValor, data) == 0) {
                                     excluir = 1;
                                 }
                             }
 
-                            if (strcmp(parametroNome, CIDADE) == 0) {
-                                if (strcmp(parametroValor, cidade) == 0) {
+                            if (strcasecmp(parametroNome, CIDADE) == 0) {
+                                if (strcasecmp(parametroValor, cidade) == 0) {
                                     excluir = 1;
                                 }
                             }
 
-                            if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
-                                if (strcmp(parametroValor, nomeEscola) == 0) {
+                            if (strcasecmp(parametroNome, NOME_ESCOLA) == 0) {
+                                if (strcasecmp(parametroValor, nomeEscola) == 0) {
                                     excluir = 1;
                                 }
                             }
@@ -982,6 +984,8 @@ void opc5(char * comando) {
                         //move o ponteiro pra posição de cabeçalho topo da lista
                         fseek(fileWb, posTopoPilha, SEEK_SET);
                         fwrite(&topoPilha, sizeof (int), 1, fileWb);
+                        
+                        
 
                         //verifica se deve parar
                         if (parar) {
@@ -1113,7 +1117,7 @@ void opc6(char * comando) {
             double nota = -1;
 
 
-            if (strcmp(tmp, NULO) != 0) {
+            if (strcasecmp(tmp, NULO) != 0) {
                 //caso haja texto, converte o mesmo pra double
                 nota = strtod(tmp, NULL);
             }
@@ -1127,7 +1131,7 @@ void opc6(char * comando) {
             char data[10] = "\0@@@@@@@@@";
 
             //caso conseguiui ler campo data do arquivo copia para variavel
-            if (strcmp(tmp, NULO) != 0) {
+            if (strcasecmp(tmp, NULO) != 0) {
                 tmp = strsep(&comando, "\"");
                 strncpy(data, tmp, sizeof (data));
             }
@@ -1147,7 +1151,7 @@ void opc6(char * comando) {
                 cidade[strlen(cidade) - 1] = '\0';
             }*/
 
-            if (strcmp(cidade, NULO) != 0) {
+            if (strcasecmp(cidade, NULO) != 0) {
                 //remove a primeira aspas
                 if (cidade[0] == '\0' && data[0] != '\0') {
                     strsep(&comando, "\"");
@@ -1191,7 +1195,7 @@ void opc6(char * comando) {
 
 
 
-            if (strcmp(nomeEscola, NULO) != 0) {
+            if (strcasecmp(nomeEscola, NULO) != 0) {
                 //pega stering restante
                 nomeEscola = strsep(&comando, "\"");
 
@@ -1344,7 +1348,7 @@ void opc7(char * comando) {
                     int salto = inicioRegistro - posAtual;
 
                     //verifica qual o parametro deve ser atualizado
-                    if (strcmp(parametroNome, NRO_INSCRICAO) == 0) {
+                    if (strcasecmp(parametroNome, NRO_INSCRICAO) == 0) {
                         //volta o ponteiro para a posição do campo
                         fseek(fileWb, salto, SEEK_CUR);
 
@@ -1353,7 +1357,7 @@ void opc7(char * comando) {
                         //escreve diretamente no arquivo
                         fwrite(&novoNroInscricao, sizeof (int), 1, fileWb);
 
-                    } else if (strcmp(parametroNome, NOTA) == 0) {
+                    } else if (strcasecmp(parametroNome, NOTA) == 0) {
 
                         //soma o campo nroinscricao
                         salto += 4;
@@ -1362,13 +1366,13 @@ void opc7(char * comando) {
 
                         double novaNota = -1;
                         //se não for nulo
-                        if (strcmp(parametroValor, NULO) != 0) {
+                        if (strcasecmp(parametroValor, NULO) != 0) {
                             novaNota = strtod(parametroValor, NULL);
                         }
 
                         fwrite(&novaNota, sizeof (double), 1, fileWb);
 
-                    } else if (strcmp(parametroNome, DATA) == 0) {
+                    } else if (strcasecmp(parametroNome, DATA) == 0) {
 
                         //soma o campo nroinscricao + nota
                         salto += 4 + 8;
@@ -1377,7 +1381,7 @@ void opc7(char * comando) {
 
                         char novaData[10] = "\0@@@@@@@@@";
 
-                        if (strcmp(parametroValor, NULO) != 0) {
+                        if (strcasecmp(parametroValor, NULO) != 0) {
                             strncpy(novaData, parametroValor, sizeof (novaData));
                         }
 
@@ -1385,7 +1389,7 @@ void opc7(char * comando) {
                         fwrite(&novaData, sizeof (novaData), 1, fileWb);
 
 
-                    } else if (strcmp(parametroNome, CIDADE) == 0) {
+                    } else if (strcasecmp(parametroNome, CIDADE) == 0) {
                         //soma o campo nroinscricao + nota + data
                         salto += 4 + 8 + 10;
                         //volta o ponteiro para a posição do campo
@@ -1400,7 +1404,7 @@ void opc7(char * comando) {
                         int bytes = 27;
 
                         //for nulo e tiver algo escrito
-                        if (strcmp(parametroValor, NULO) == 0) {
+                        if (strcasecmp(parametroValor, NULO) == 0) {
 
                             if (tamanhoCidadeAtual) {
                                 //desloca os dados da escola pra frente
@@ -1481,7 +1485,7 @@ void opc7(char * comando) {
                             }
                         }
 
-                    } else if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
+                    } else if (strcasecmp(parametroNome, NOME_ESCOLA) == 0) {
                         //asdasdasdasd
 
                     }
