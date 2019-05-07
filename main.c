@@ -57,21 +57,25 @@ void escreverNaTela(char *nomeArquivoBinario) {
     /* Escolha essa função se você já fechou o ponteiro de arquivo 'FILE *'.
      *  Ela vai abrir de novo para leitura e depois fechar. */
 
-    size_t fl;
-    FILE *fs;
-    char *mb;
-    if (nomeArquivoBinario == NULL || !(fs = fopen(nomeArquivoBinario, "rb"))) {
-        fprintf(stderr, "ERRO AO ESCREVER O BINARIO NA TELA (função binarioNaTela2): não foi possível abrir o arquivo que me passou para leitura. Ele existe e você tá passando o nome certo? Você lembrou de fechar ele com fclose depois de usar? Se você não fechou ele, pode usar a outra função, binarioNaTela1, ou pode fechar ele antes de chamar essa função!\n");
-        return;
-    }
-    fseek(fs, 0, SEEK_END);
-    fl = ftell(fs);
-    fseek(fs, 0, SEEK_SET);
-    mb = (char *) malloc(fl);
-    fread(mb, 1, fl, fs);
-    fwrite(mb, 1, fl, stdout);
-    free(mb);
-    fclose(fs);
+    unsigned char *mb;
+	unsigned long i;
+	size_t fl;
+	FILE *fs;
+	if(nomeArquivoBinario == NULL || !(fs = fopen(nomeArquivoBinario, "rb"))) {
+		fprintf(stderr, "ERRO AO ESCREVER O BINARIO NA TELA (função binarioNaTela2): não foi possível abrir o arquivo que me passou para leitura. Ele existe e você tá passando o nome certo? Você lembrou de fechar ele com fclose depois de usar? Se você não fechou ele, pode usar a outra função, binarioNaTela1, ou pode fechar ele antes de chamar essa função!\n");
+		return;
+	}
+	fseek(fs, 0, SEEK_END);
+	fl = ftell(fs);
+	fseek(fs, 0, SEEK_SET);
+	mb = (unsigned char *) malloc(fl);
+	fread(mb, 1, fl, fs);
+	for(i = 0; i < fl; i += sizeof(unsigned char)) {
+		printf("%02X ", mb[i]);
+		if((i + 1) % 16 == 0)	printf("\n");
+	}
+	free(mb);
+	fclose(fs);
 }
 
 /**
@@ -614,8 +618,11 @@ void opc2(char * comando) {
 
         int diff = totalBytes % TAMANHO_PAGINA;
 
-        totalPaginasAcessadas += (diff > 0) ? 1 : 0;
+        totalPaginasAcessadas += (diff > 1) ? 1 : 0;
 
+        //soma 1 da leitura do cabcelaho
+        totalPaginasAcessadas++;
+        
         printf("Número de páginas de disco acessadas: %d", totalPaginasAcessadas);
     } else {
         printf("Falha no processamento do arquivo.");
@@ -859,8 +866,16 @@ void opc5(char * comando) {
             char * parametroValor = strsep(&comando, "\"");
 
             //remove " do valor do campo
-            if (strcasecmp(parametroNome, NOME_ESCOLA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 || strcasecmp(parametroNome, DATA) == 0) {
+            if (strcasecmp(parametroNome, NOME_ESCOLA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 ) {
                 parametroValor = strsep(&comando, "\"");
+            }
+            
+            //verifica se a data esta vindo com aspas
+            if(strcasecmp(parametroNome, DATA) == 0){
+                //pega o valor entre aspas
+                if(strcasecmp(parametroValor, "")==0){
+                    parametroValor = strsep(&comando, "\"");
+                }
             }
 
             //verifica se é um parametro válido
@@ -1467,6 +1482,7 @@ void opc7(char * comando) {
                         }
 
                     } else if (strcmp(parametroNome, NOME_ESCOLA) == 0) {
+                        //asdasdasdasd
 
                     }
 
@@ -1501,7 +1517,11 @@ void opc7(char * comando) {
  * Função Principal
  */
 int main() {
-
+     
+    
+    /*char a='@';
+    printf("%02X ", a);
+    exit(0);*/
     //comando a ser lido
     char * comando = calloc(100, sizeof (char));
     //strcpy(comando,"3 arquivoTrab1si.bin nomeEscola FRANCISCO RIBEIRO CARRI\0");
@@ -1559,6 +1579,12 @@ int main() {
         case 7:
         {
             opc7(comando);
+            break;
+        }
+        case 99:{
+            char * nomeArquivo = strsep(&comando, " ");
+            escreverNaTela(nomeArquivo);
+            
             break;
         }
         default:
