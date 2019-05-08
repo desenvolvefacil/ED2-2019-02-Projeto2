@@ -414,7 +414,7 @@ void opc1(char * comando) {
                     fwrite(&lixo, total, 1, wbFile);
 
                     //libera memoria do lixo
-                    free(lixo);
+                    //free(lixo);
                     lixo = NULL;
 
                     //break;
@@ -535,7 +535,7 @@ void opc1(char * comando) {
                     }
                     //escreve em arquivo o lixo
                     fwrite(&lixo, total, 1, wbFile);
-                    free(lixo);
+                    //free(lixo);
                     lixo = NULL;
                 }
             }
@@ -885,7 +885,7 @@ void opc5(char * comando) {
                 int RRN = 0;
 
                 //voltao o ponteiro pro inicio do arquivo
-                fseek(fileWb, 0, SEEK_SET);
+                rewind(fileWb);
 
                 while (!feof(fileWb)) {
                     char removido;
@@ -1062,6 +1062,9 @@ void opc6(char * comando) {
         int topoPilha = -10;
         fread(&topoPilha, sizeof (int), 1, fileWb);
 
+        
+        
+        
 
         int vez;
         //for para ler os comandos a serem executados
@@ -1137,6 +1140,7 @@ void opc6(char * comando) {
                 //**caso venha com aspas
                 if (strlen(tmp) < 10) {
                     tmp = strsep(&comando, "\"");
+                    strsep(&comando, " \"");
                 }
                 strncpy(data, tmp, sizeof (data));
             }
@@ -1231,7 +1235,7 @@ void opc6(char * comando) {
 
 
             //for para setar @ nos bytes faltantes
-            char arr='@';
+            char arr = '@';
             int i;
             for (i = totalBytes; i < TAMANHO_REGISTRO; i++) {
                 fwrite(&arr, 1, 1, fileWb);
@@ -1243,18 +1247,13 @@ void opc6(char * comando) {
             fwrite(&topoPilha, sizeof (int), 1, fileWb);
         }
 
+        
 
 
         fecharArquivoBinarioEscrita(fileWb);
     } else {
         erro = 1;
     }
-
-
-
-
-
-
 
 
 
@@ -1280,7 +1279,10 @@ void opc6(char * comando) {
 5 cidade NULO
 2 cidade NULO
 
+7 arquivoTrab1si.bin 1
+2 nomeEscola "Escola Nova"
 
+2 arquivoTrab1si.bin
  * 
  * @param comando
  */
@@ -1297,6 +1299,9 @@ void opc7(char * comando) {
         int vez;
         //for para ler os comandos a serem executados
         for (vez = 0; vez < numeroIteracoes; vez++) {
+
+            //voltao o ponteiro pro inicio do arquivo
+            rewind(fileWb);
 
             //começa a escreve os dados no arquivo
             comando = lerComando();
@@ -1458,8 +1463,8 @@ void opc7(char * comando) {
                                 tamanhoEscolaAtual--;
 
                                 //escreve a tag do campo
-                                char tagCampoCidade = TAG_CAMPO_ESCOLA;
-                                fwrite(&tagCampoCidade, sizeof (char), 1, fileWb);
+                                char tagCampoEscola = TAG_CAMPO_ESCOLA;
+                                fwrite(&tagCampoEscola, sizeof (char), 1, fileWb);
 
                                 //escreve a string cidade no arquivo
                                 fwrite(nomeEscolaAtual, tamanhoEscolaAtual, 1, fileWb);
@@ -1479,7 +1484,69 @@ void opc7(char * comando) {
                         }
 
                     } else if (strcasecmp(parametroNome, NOME_ESCOLA) == 0) {
-                        //asdasdasdasd
+
+                        //verifica se tem cidade atual
+                        int tamanhoCidadeAtual = strlen(cidadeAtual);
+
+                        //tota de bytes escritos no registro até o momento
+                        int bytes = 27;
+
+                        if (tamanhoCidadeAtual > 0) {
+                            //soma tamanho(4) + tagCampo(1) + \0 (1)
+                            tamanhoCidadeAtual += 6;
+
+                            bytes += 5 + tamanhoCidadeAtual;
+                        }
+
+                        //soma o campo nroinscricao + nota + data
+                        salto += 4 + 8 + 10 + tamanhoCidadeAtual;
+                        //volta o ponteiro para a posição do campo
+                        fseek(fileWb, salto, SEEK_CUR);
+
+
+                        if (strcasecmp(parametroValor, NULO) != 0) {
+
+                            //grava os dados da escola pra frente do arquivo
+
+                            int tamanhoescolaNova = strlen(parametroValor) + 1;
+                            
+                            //concatena com \0 no final d string
+                            char * escolaNova = strncat(parametroValor, "\0", tamanhoescolaNova);
+                            
+                            //add o char tagCampoCidade no tamanho do campo
+                            tamanhoescolaNova++;
+
+                            //salva o tamanho do campo
+                            fwrite(&tamanhoescolaNova, sizeof (tamanhoescolaNova), 1, fileWb);
+
+                            //remove o char tagCampoCidade para salvar a string cidade
+                            tamanhoescolaNova--;
+
+                            //escreve a tag do campo
+                            char tagCampoEscola = TAG_CAMPO_ESCOLA;
+                            fwrite(&tagCampoEscola, sizeof (char), 1, fileWb);
+
+                            //escreve a string cidade no arquivo
+                            fwrite(escolaNova, tamanhoescolaNova, 1, fileWb);
+
+                            //soma os bytes deslocados
+                            bytes += 5 + tamanhoescolaNova;
+                        }
+
+                        //completa com nulos
+                        char arr = '@';
+                        int j;
+
+                        //completa com nulos caso 
+                        for (j = bytes; j < TAMANHO_REGISTRO; j++) {
+                            fwrite(&arr, 1, 1, fileWb);
+                        }
+
+
+
+
+
+
 
                     }
 
@@ -1593,7 +1660,7 @@ int main() {
     }
 
     //libera memoria do comando
-    free(comando);
+    //free(comando);
     comando = NULL;
 
     return (0);
