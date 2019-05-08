@@ -58,24 +58,24 @@ void escreverNaTela(char *nomeArquivoBinario) {
      *  Ela vai abrir de novo para leitura e depois fechar. */
 
     unsigned char *mb;
-	unsigned long i;
-	size_t fl;
-	FILE *fs;
-	if(nomeArquivoBinario == NULL || !(fs = fopen(nomeArquivoBinario, "rb"))) {
-		fprintf(stderr, "ERRO AO ESCREVER O BINARIO NA TELA (função binarioNaTela2): não foi possível abrir o arquivo que me passou para leitura. Ele existe e você tá passando o nome certo? Você lembrou de fechar ele com fclose depois de usar? Se você não fechou ele, pode usar a outra função, binarioNaTela1, ou pode fechar ele antes de chamar essa função!\n");
-		return;
-	}
-	fseek(fs, 0, SEEK_END);
-	fl = ftell(fs);
-	fseek(fs, 0, SEEK_SET);
-	mb = (unsigned char *) malloc(fl);
-	fread(mb, 1, fl, fs);
-	for(i = 0; i < fl; i += sizeof(unsigned char)) {
-		printf("%02X ", mb[i]);
-		if((i + 1) % 16 == 0)	printf("\n");
-	}
-	free(mb);
-	fclose(fs);
+    unsigned long i;
+    size_t fl;
+    FILE *fs;
+    if (nomeArquivoBinario == NULL || !(fs = fopen(nomeArquivoBinario, "rb"))) {
+        fprintf(stderr, "ERRO AO ESCREVER O BINARIO NA TELA (função binarioNaTela2): não foi possível abrir o arquivo que me passou para leitura. Ele existe e você tá passando o nome certo? Você lembrou de fechar ele com fclose depois de usar? Se você não fechou ele, pode usar a outra função, binarioNaTela1, ou pode fechar ele antes de chamar essa função!\n");
+        return;
+    }
+    fseek(fs, 0, SEEK_END);
+    fl = ftell(fs);
+    fseek(fs, 0, SEEK_SET);
+    mb = (unsigned char *) malloc(fl);
+    fread(mb, 1, fl, fs);
+    for (i = 0; i < fl; i += sizeof (unsigned char)) {
+        printf("%02X ", mb[i]);
+        if ((i + 1) % 16 == 0) printf("\n");
+    }
+    free(mb);
+    fclose(fs);
 }
 
 /**
@@ -622,7 +622,7 @@ void opc2(char * comando) {
 
         //soma 1 da leitura do cabcelaho
         totalPaginasAcessadas++;
-        
+
         printf("Número de páginas de disco acessadas: %d", totalPaginasAcessadas);
     } else {
         printf("Falha no processamento do arquivo.");
@@ -866,14 +866,14 @@ void opc5(char * comando) {
             char * parametroValor = strsep(&comando, "\"");
 
             //remove " do valor do campo
-            if (strcasecmp(parametroNome, NOME_ESCOLA) == 0 || strcasecmp(parametroNome, CIDADE) == 0 ) {
+            if (strcasecmp(parametroNome, NOME_ESCOLA) == 0 || strcasecmp(parametroNome, CIDADE) == 0) {
                 parametroValor = strsep(&comando, "\"");
             }
-            
+
             //verifica se a data esta vindo com aspas
-            if(strcasecmp(parametroNome, DATA) == 0){
+            if (strcasecmp(parametroNome, DATA) == 0) {
                 //pega o valor entre aspas
-                if(strcasecmp(parametroValor, "")==0){
+                if (strcasecmp(parametroValor, "") == 0) {
                     parametroValor = strsep(&comando, "\"");
                 }
             }
@@ -885,7 +885,7 @@ void opc5(char * comando) {
                 int RRN = 0;
 
                 //voltao o ponteiro pro inicio do arquivo
-                fseek(fileWb,0,SEEK_SET);
+                fseek(fileWb, 0, SEEK_SET);
 
                 while (!feof(fileWb)) {
                     char removido;
@@ -984,8 +984,8 @@ void opc5(char * comando) {
                         //move o ponteiro pra posição de cabeçalho topo da lista
                         fseek(fileWb, posTopoPilha, SEEK_SET);
                         fwrite(&topoPilha, sizeof (int), 1, fileWb);
-                        
-                        
+
+
 
                         //verifica se deve parar
                         if (parar) {
@@ -1130,9 +1130,14 @@ void opc6(char * comando) {
             //seta data nula padrao
             char data[10] = "\0@@@@@@@@@";
 
+
             //caso conseguiui ler campo data do arquivo copia para variavel
+
             if (strcasecmp(tmp, NULO) != 0) {
-                tmp = strsep(&comando, "\"");
+                //**caso venha com aspas
+                if (strlen(tmp) < 10) {
+                    tmp = strsep(&comando, "\"");
+                }
                 strncpy(data, tmp, sizeof (data));
             }
 
@@ -1147,17 +1152,15 @@ void opc6(char * comando) {
             char * cidade = strsep(&comando, " \"");
 
 
-            /*if (cidade[strlen(cidade) - 1] == ' ') {
-                cidade[strlen(cidade) - 1] = '\0';
-            }*/
-
             if (strcasecmp(cidade, NULO) != 0) {
                 //remove a primeira aspas
                 if (cidade[0] == '\0' && data[0] != '\0') {
-                    strsep(&comando, "\"");
+                    cidade = strsep(&comando, "\"");
                 }
 
-                cidade = strsep(&comando, "\"");
+                if (strlen(cidade) == 0) {
+                    cidade = strsep(&comando, "\"");
+                }
                 //removeAspas(cidade);
 
                 //add 1 para o \0
@@ -1227,22 +1230,12 @@ void opc6(char * comando) {
 
 
 
-
-            //escreve o lixo para completar o registro
-            int i, total = TAMANHO_REGISTRO - totalBytes;
-            //cria a variavel com tamanho que falta
-            char * lixo = calloc(total, 1);
             //for para setar @ nos bytes faltantes
-            for (i = 0; i < total; i++) {
-                lixo[i] = '@';
+            char arr='@';
+            int i;
+            for (i = totalBytes; i < TAMANHO_REGISTRO; i++) {
+                fwrite(&arr, 1, 1, fileWb);
             }
-            //escreve em arquivo o lixo
-            fwrite(&lixo, total, 1, fileWb);
-            free(lixo);
-            lixo = NULL;
-
-
-
 
 
             //salva o topo atual dos escluidos
@@ -1437,9 +1430,9 @@ void opc7(char * comando) {
                                 fwrite(cidadeNova, tamanhoCidadeNova, 1, fileWb);
 
                                 bytes += 5 + tamanhoCidadeNova;
-                                
+
                                 //remove 1 do \0
-                                if (tamanhoCidadeAtual != (tamanhoCidadeNova-1)) {
+                                if (tamanhoCidadeAtual != (tamanhoCidadeNova - 1)) {
                                     //se o tamanho for diferente desloca a cidade
                                     deslocaEscola = 1;
                                 }
@@ -1470,7 +1463,7 @@ void opc7(char * comando) {
 
                                 //escreve a string cidade no arquivo
                                 fwrite(nomeEscolaAtual, tamanhoEscolaAtual, 1, fileWb);
-                                
+
                                 //soma os bytes deslocados
                                 bytes += 5 + tamanhoEscolaAtual;
                             }
@@ -1521,8 +1514,8 @@ void opc7(char * comando) {
  * Função Principal
  */
 int main() {
-     
-    
+
+
     /*char a='@';
     printf("%02X ", a);
     exit(0);*/
@@ -1585,10 +1578,11 @@ int main() {
             opc7(comando);
             break;
         }
-        case 99:{
+        case 99:
+        {
             char * nomeArquivo = strsep(&comando, " ");
             escreverNaTela(nomeArquivo);
-            
+
             break;
         }
         default:
