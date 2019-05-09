@@ -753,7 +753,7 @@ void opc3(char * comando) {
 
 
     if (erro) {
-        printf("Falha no processamento do arquivo");
+        printf("Falha no processamento do arquivo.");
     }
 }
 
@@ -813,7 +813,7 @@ void opc4(char * comando) {
     }
 
     if (erro) {
-        printf("Falha no processamento do arquivo");
+        printf("Falha no processamento do arquivo.");
     }
 
 }
@@ -1018,7 +1018,7 @@ void opc5(char * comando) {
     }
 
     if (erro) {
-        printf("Falha no processamento do arquivo");
+        printf("Falha no processamento do arquivo.");
     } else {
         escreverNaTela(nomeArquivo);
     }
@@ -1097,6 +1097,8 @@ void opc6(char * comando) {
             //começa a escreve os dados no arquivo
             comando = lerComando();
 
+            
+            
             //grava o valor de removido
             char removido = NAO_REMOVIDO;
             fwrite(&removido, sizeof (char), 1, fileWb);
@@ -1157,10 +1159,6 @@ void opc6(char * comando) {
 
 
             if (strcasecmp(cidade, NULO) != 0) {
-                //remove a primeira aspas
-                if (cidade[0] == '\0' && data[0] != '\0') {
-                    cidade = strsep(&comando, "\"");
-                }
 
                 if (strlen(cidade) == 0) {
                     cidade = strsep(&comando, "\"");
@@ -1258,7 +1256,7 @@ void opc6(char * comando) {
 
 
     if (erro) {
-        printf("Falha no processamento do arquivo");
+        printf("Falha no processamento do arquivo.");
     } else {
         escreverNaTela(nomeArquivo);
     }
@@ -1571,7 +1569,7 @@ void opc7(char * comando) {
 
 
     if (erro) {
-        printf("Falha no processamento do arquivo");
+        printf("Falha no processamento do arquivo.");
     } else {
         escreverNaTela(nomeArquivo);
     }
