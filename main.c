@@ -300,8 +300,13 @@ char * lerComando() {
     size_t ln = strlen(comando) - 1;
 
     //elimina o \n caso houver para ajudar e evitar erros no processamento
+    //remove o enter e o carriage return
     if (comando[ln] == '\n') {
         comando[ln] = '\0';
+
+        if (comando[ln - 1] == '\r') {
+            comando[ln - 1] = '\0';
+        }
     }
 
     return comando;
@@ -1062,9 +1067,9 @@ void opc6(char * comando) {
         int topoPilha = -10;
         fread(&topoPilha, sizeof (int), 1, fileWb);
 
-        
-        
-        
+
+
+
 
         int vez;
         //for para ler os comandos a serem executados
@@ -1097,8 +1102,8 @@ void opc6(char * comando) {
             //começa a escreve os dados no arquivo
             comando = lerComando();
 
-            
-            
+
+
             //grava o valor de removido
             char removido = NAO_REMOVIDO;
             fwrite(&removido, sizeof (char), 1, fileWb);
@@ -1245,7 +1250,7 @@ void opc6(char * comando) {
             fwrite(&topoPilha, sizeof (int), 1, fileWb);
         }
 
-        
+
 
 
         fecharArquivoBinarioEscrita(fileWb);
@@ -1507,10 +1512,10 @@ void opc7(char * comando) {
                             //grava os dados da escola pra frente do arquivo
 
                             int tamanhoescolaNova = strlen(parametroValor) + 1;
-                            
+
                             //concatena com \0 no final d string
                             char * escolaNova = strncat(parametroValor, "\0", tamanhoescolaNova);
-                            
+
                             //add o char tagCampoCidade no tamanho do campo
                             tamanhoescolaNova++;
 
@@ -1600,6 +1605,10 @@ int main() {
     //elimina o \n caso houver para ajudar e evitar erros no processamento
     if (comando[ln] == '\n') {
         comando[ln] = '\0';
+
+        if (comando[ln - 1] == '\r') {
+            comando[ln - 1] = '\0';
+        }
     }
 
 
